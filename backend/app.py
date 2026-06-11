@@ -38,7 +38,7 @@ def health():
         "status": "healthy",
         "service": "vega-project",
         "timestamp": datetime.utcnow().isoformat()
-    }), 
+    }), 200
 
 import time
 
