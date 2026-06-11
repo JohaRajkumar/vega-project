@@ -2,7 +2,7 @@ import { useState, useEffect, useRef } from 'react';
 import './App.css';
 import IntroLoader from './IntroLoader';
 
-const API_BASE = 'http://localhost:5050';
+const API_BASE = import.meta.env.VITE_API_URL || "http://localhost:5050";
 
 const escapeCSV = (val) => {
   if (val === null || val === undefined) return '';
