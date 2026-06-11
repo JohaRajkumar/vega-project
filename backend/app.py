@@ -15,6 +15,31 @@ from file_converter import extract_text_from_file
 app = Flask(__name__)
 app.config.from_object(Config)
 
+# ----------------- Root & Health Routes -----------------
+
+@app.route("/", methods=["GET"])
+def home():
+    return jsonify({
+        "status": "success",
+        "message": "VEGA Project API is running",
+        "timestamp": datetime.utcnow().isoformat(),
+        "endpoints": {
+            "health": "/health",
+            "runs": "/api/runs",
+            "upload": "/api/upload",
+            "clear_history": "/api/runs/clear"
+        }
+    }), 200
+
+
+@app.route("/health", methods=["GET"])
+def health():
+    return jsonify({
+        "status": "healthy",
+        "service": "vega-project",
+        "timestamp": datetime.utcnow().isoformat()
+    }), 
+
 import time
 
 @app.before_request

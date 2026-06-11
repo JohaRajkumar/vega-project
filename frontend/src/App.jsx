@@ -17,10 +17,10 @@ function App() {
   const toastCounterRef = useRef(0);
   const [showIntro, setShowIntro] = useState(true);
   const [activeTab, setActiveTab] = useState('dashboard');
-  
+
   // Toast notifications state
   const [toasts, setToasts] = useState([]);
-  
+
   // Dashboard state
   const [runs, setRuns] = useState([]);
   const [stats, setStats] = useState({ total: 0, completed: 0, failed: 0, partial: 0, ollama_mocked: true });
@@ -38,7 +38,7 @@ function App() {
   const [isExecuting, setIsExecuting] = useState(false);
   const [approvalStep, setApprovalStep] = useState(null);
   const [approvalWarning, setApprovalWarning] = useState('');
-  
+
   // Audit details state
   const [auditRunId, setAuditRunId] = useState(null);
   const [auditRunDetails, setAuditRunDetails] = useState(null);
@@ -124,12 +124,12 @@ function App() {
       if (!res.ok) throw new Error('Failed to fetch status');
       const data = await res.json();
       setCurrentRun(data);
-      
+
       // Reconstruct terminal console logs from backend step run history
       if (forceReconstructLogs || consoleLogs.length <= 1) {
         const reconstructedLogs = [];
         reconstructedLogs.push({ type: 'system', text: `[SYSTEM] Initialized runner for Run ID ${data.run.id} (${data.run.name})` });
-        
+
         const sortedSteps = [...data.steps].sort((a, b) => a.step_number - b.step_number);
         sortedSteps.forEach(step => {
           if (step.status === 'SUCCESS') {
@@ -161,14 +161,14 @@ function App() {
             }
           }
         });
-        
+
         if (data.run.status === 'COMPLETED' || data.run.status === 'FAILED' || data.run.status === 'PARTIAL') {
           reconstructedLogs.push({ type: 'system', text: `[SYSTEM] Run finalized. Status: ${data.run.status}` });
           if (data.run.audit_summary) {
             reconstructedLogs.push({ type: 'output', text: data.run.audit_summary });
           }
         }
-        
+
         setConsoleLogs(reconstructedLogs);
       }
 
@@ -206,7 +206,7 @@ function App() {
 
   const handleDownloadCSV = () => {
     if (!auditRunDetails) return;
-    
+
     const headers = [
       'Step Number',
       'Description',
@@ -218,7 +218,7 @@ function App() {
       'Corrected Command',
       'Executed At'
     ];
-    
+
     const rows = auditRunDetails.steps.map(step => [
       step.step_number,
       step.description || '',
@@ -230,16 +230,16 @@ function App() {
       step.corrected_command || '',
       step.executed_at ? new Date(step.executed_at).toLocaleString() : ''
     ]);
-    
+
     const csvContent = [
       headers.map(escapeCSV).join(','),
       ...rows.map(row => row.map(escapeCSV).join(','))
     ].join('\n');
-    
+
     const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
     const url = URL.createObjectURL(blob);
     const link = document.createElement('a');
-    
+
     const cleanName = auditRunDetails.run.name.toLowerCase().replace(/[^a-z0-9]/g, '_');
     link.href = url;
     link.setAttribute('download', `runbook_report_Run_${auditRunDetails.run.id}_${cleanName}.csv`);
@@ -247,7 +247,7 @@ function App() {
     link.click();
     document.body.removeChild(link);
     URL.revokeObjectURL(url);
-    
+
     triggerToast('CSV report downloaded successfully.', 'success');
   };
 
@@ -370,7 +370,7 @@ function App() {
           { type: 'error', text: `[FAILURE DETECTED] Fetching correct command via MCP...` }
         ]);
         addAgentLog(`Step ${step.step_number} failed. MCP auto-recovery protocol initiated.`, 'danger');
-        
+
       } else if (data.status === 'RECOVERED') {
         const step = data.step;
         setConsoleLogs(prev => [
@@ -380,7 +380,7 @@ function App() {
           { type: 'output', text: step.output || 'Recovered.' }
         ]);
         addAgentLog(`Step ${step.step_number} successfully auto-recovered via MCP.`, 'check');
-        
+
       } else if (data.status === 'FAILED') {
         const step = data.step;
         setConsoleLogs(prev => [
@@ -683,872 +683,872 @@ function App() {
     <>
       {showIntro && <IntroLoader onComplete={() => { setShowIntro(false); setActiveTab('dashboard'); }} />}
       <div className="app-container">
-      {/* Toast Notification Container */}
-      <div className="toast-container">
-        {toasts.map(toast => (
-          <div key={toast.id} className={`toast-message ${toast.type}`}>
-            {toast.type === 'success' && '✓'}
-            {toast.type === 'error' && '⚠'}
-            {toast.type === 'info' && 'ℹ'}
-            {toast.message}
-          </div>
-        ))}
-      </div>
-
-      {/* System Status Header */}
-      <header className="app-header">
-        <div className="logo-section">
-          <img src="/logo.png" alt="Runbook Agent Logo" className="app-logo" />
-<h1>VEGA</h1>
-          
+        {/* Toast Notification Container */}
+        <div className="toast-container">
+          {toasts.map(toast => (
+            <div key={toast.id} className={`toast-message ${toast.type}`}>
+              {toast.type === 'success' && '✓'}
+              {toast.type === 'error' && '⚠'}
+              {toast.type === 'info' && 'ℹ'}
+              {toast.message}
+            </div>
+          ))}
         </div>
-        <div className="system-status">
-          <div className="status-indicator">
-            <span className={`status-dot ${isBackendConnected ? 'active' : ''}`}></span>
-            Backend: {isBackendConnected ? 'Online' : 'Offline'}
+
+        {/* System Status Header */}
+        <header className="app-header">
+          <div className="logo-section">
+            <img src="/logo.png" alt="Runbook Agent Logo" className="app-logo" />
+            <h1>VEGA</h1>
+
           </div>
-          <div className="status-indicator">
-            <span className={`status-dot ${isBackendConnected ? (stats.ollama_mocked ? 'warning' : 'active') : ''}`}></span>
-            Ollama: {isBackendConnected ? (stats.ollama_mocked ? 'Offline (Mocking)' : 'Online') : 'Unknown'}
+          <div className="system-status">
+            <div className="status-indicator">
+              <span className={`status-dot ${isBackendConnected ? 'active' : ''}`}></span>
+              Backend: {isBackendConnected ? 'Online' : 'Offline'}
+            </div>
+            <div className="status-indicator">
+              <span className={`status-dot ${isBackendConnected ? (stats.ollama_mocked ? 'warning' : 'active') : ''}`}></span>
+              Ollama: {isBackendConnected ? (stats.ollama_mocked ? 'Offline (Mocking)' : 'Online') : 'Unknown'}
+            </div>
           </div>
-        </div>
-      </header>
+        </header>
 
-      {/* Navigation */}
-      <nav className="app-nav">
-        <button className={`nav-tab ${activeTab === 'dashboard' ? 'active' : ''}`} onClick={() => setActiveTab('dashboard')}>
-          Dashboard
-        </button>
-        <button className={`nav-tab ${activeTab === 'runner' ? 'active' : ''}`} onClick={() => {
-          if (currentRunId) {
-            loadRunDetails(currentRunId);
-          }
-          setActiveTab('runner');
-        }}>
-          {getFeedTitle()} {currentRun && `(ID: ${currentRun.run.id})`}
-        </button>
-        <button className={`nav-tab ${activeTab === 'audit' ? 'active' : ''}`} onClick={() => setActiveTab('audit')}>
-          Audit Report
-        </button>
-      </nav>
+        {/* Navigation */}
+        <nav className="app-nav">
+          <button className={`nav-tab ${activeTab === 'dashboard' ? 'active' : ''}`} onClick={() => setActiveTab('dashboard')}>
+            Dashboard
+          </button>
+          <button className={`nav-tab ${activeTab === 'runner' ? 'active' : ''}`} onClick={() => {
+            if (currentRunId) {
+              loadRunDetails(currentRunId);
+            }
+            setActiveTab('runner');
+          }}>
+            {getFeedTitle()} {currentRun && `(ID: ${currentRun.run.id})`}
+          </button>
+          <button className={`nav-tab ${activeTab === 'audit' ? 'active' : ''}`} onClick={() => setActiveTab('audit')}>
+            Audit Report
+          </button>
+        </nav>
 
-      {/* Main Tab Content */}
-      <main style={{ flexGrow: 1, display: 'flex', flexDirection: 'column', gap: '24px' }}>
-        {activeTab === 'dashboard' && (
-          <>
-            {/* Quick Stats Grid */}
-            <section className="stats-grid">
-              <div className="glass-panel stat-card">
-                <h3>Total Staged Runs</h3>
-                <div className="value">{stats.total}</div>
-              </div>
-              <div className="glass-panel stat-card" style={{ borderLeft: '4px solid var(--color-success)' }}>
-                <h3>Completed</h3>
-                <div className="value" style={{ color: 'var(--color-success)' }}>{stats.completed}</div>
-              </div>
-              <div className="glass-panel stat-card" style={{ borderLeft: '4px solid var(--color-warning)' }}>
-                <h3>Skipped / Partial</h3>
-                <div className="value" style={{ color: 'var(--color-warning)' }}>{stats.partial}</div>
-              </div>
-              <div className="glass-panel stat-card" style={{ borderLeft: '4px solid var(--color-danger)' }}>
-                <h3>Failed</h3>
-                <div className="value" style={{ color: 'var(--color-danger)' }}>{stats.failed}</div>
-              </div>
-            </section>
-
-            {/* Dashboard Input Area */}
-            <div className="dashboard-grid">
-              {/* Form Input */}
-              <section className="glass-panel" style={{ padding: '24px' }}>
-                <h2 className="card-title">Stage Runbook</h2>
-
-                <form onSubmit={handleUpload} className="input-section">
-                  <div className="form-group">
-                    <label>Runbook Context Name (Optional)</label>
-                    <input 
-                      type="text" 
-                      className="text-input" 
-                      placeholder="e.g. MySQL Database Restart" 
-                      value={uploadName} 
-                      onChange={(e) => setUploadName(e.target.value)} 
-                    />
-                  </div>
-
-                  <div className="form-group">
-                    <label>Upload Runbook File</label>
-                    <label 
-                      className="upload-zone"
-                      style={{
-                        borderColor: isDragging ? 'var(--color-primary)' : 'rgba(255, 255, 255, 0.12)',
-                        background: isDragging ? 'rgba(127, 90, 240, 0.05)' : 'rgba(0, 0, 0, 0.1)'
-                      }}
-                      onDragOver={handleDragOver}
-                      onDragLeave={handleDragLeave}
-                      onDrop={handleDrop}
-                    >
-                      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                        <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
-                        <polyline points="17 8 12 3 7 8" />
-                        <line x1="12" y1="3" x2="12" y2="15" />
-                      </svg>
-                      <div style={{ textAlign: 'center' }}>
-                        {uploadFile ? (
-                          <strong style={{ color: 'var(--color-success)' }}>{uploadFile.name}</strong>
-                        ) : (
-                          <>
-                            <div>Drag & drop or <span style={{ color: 'var(--color-primary)', textDecoration: 'underline' }}>browse</span></div>
-                            <div style={{ fontSize: '11px', color: 'var(--color-text-muted)', marginTop: '4px' }}>
-                              Supports PDF, DOCX, XLSX, JSON, YAML, CSV, HTML, MD, TXT
-                            </div>
-                          </>
-                        )}
-                      </div>
-                      <input 
-                        type="file" 
-                        accept=".md,.txt,.pdf,.docx,.xlsx,.json,.yaml,.yml,.csv,.rst,.html,.htm" 
-                        onChange={(e) => {
-                          if (e.target.files && e.target.files[0]) {
-                            setUploadFile(e.target.files[0]);
-                          }
-                        }} 
-                      />
-                    </label>
-                  </div>
-
-                  <div style={{ textAlign: 'center', color: 'var(--color-text-muted)', fontSize: '13px', margin: '-8px 0' }}>— OR —</div>
-
-                  <div className="form-group">
-                    <label>Paste Runbook Text (Markdown format)</label>
-                    <textarea 
-                      className="paste-area" 
-                      placeholder="# System Diagnostics Runbook&#10;1. Check memory usage: `free -m`&#10;2. Check storage status: `df -h`"
-                      value={uploadText}
-                      onChange={(e) => setUploadText(e.target.value)}
-                    />
-                  </div>
-
-                  <div style={{ display: 'flex', gap: '12px' }}>
-                    <button type="submit" className="btn-primary" style={{ flexGrow: 1 }} disabled={!isBackendConnected || isUploading}>
-                      {isUploading ? 'Staging...' : 'Stage & Parse Runbook'}
-                    </button>
-                    <button 
-                      type="button" 
-                      onClick={handleLoadEdgeCase}
-                      style={{ 
-                        padding: '12px 24px', 
-                        borderRadius: 'var(--border-radius-sm)', 
-                        fontWeight: '700',
-                        fontSize: '16px',
-                        cursor: 'pointer',
-                        background: 'linear-gradient(135deg, #facc15 0%, #eab308 100%)',
-                        border: 'none',
-                        color: '#050508',
-                        transition: 'var(--transition-smooth)',
-                        boxShadow: '0 4px 12px rgba(234, 179, 8, 0.3)'
-                      }}
-                      onMouseOver={(e) => {
-                        e.currentTarget.style.filter = 'brightness(1.1)';
-                        e.currentTarget.style.boxShadow = '0 6px 16px rgba(234, 179, 8, 0.5)';
-                      }}
-                      onMouseOut={(e) => {
-                        e.currentTarget.style.filter = 'none';
-                        e.currentTarget.style.boxShadow = '0 4px 12px rgba(234, 179, 8, 0.3)';
-                      }}
-                    >
-                      EDGE CASE
-                    </button>
-                  </div>
-                </form>
-              </section>
-
-              {/* History List */}
-              <section className="glass-panel history-section" style={{ padding: '24px' }}>
-                <h2 className="card-title">
-                  Run History
-                  {runs.length > 0 && (
-                    <button className="btn-danger" onClick={handleClearHistory}>
-                      Clear History
-                    </button>
-                  )}
-                </h2>
-                
-                <div className="runs-table-container" style={{ flexGrow: 1 }}>
-                  {runs.length === 0 ? (
-                    <div style={{ textAlign: 'center', color: 'var(--color-text-secondary)', padding: '40px 0' }}>
-                      No runbook execution records found.
-                    </div>
-                  ) : (
-                    <table className="runs-table">
-                      <thead>
-                        <tr>
-                          <th>Runbook</th>
-                          <th>Status</th>
-                          <th>Progress</th>
-                          <th>Action</th>
-                        </tr>
-                      </thead>
-                      <tbody>
-                        {runs.map((r) => (
-                          <tr key={r.id}>
-                            <td>
-                              <div style={{ fontWeight: 700 }}>{r.name}</div>
-                              <div style={{ fontSize: '12px', color: 'var(--color-text-muted)', marginTop: '4px' }}>
-                                ID: {r.id} • {new Date(r.created_at).toLocaleString()}
-                              </div>
-                            </td>
-                            <td>
-                              <span className={`badge ${r.status.toLowerCase()}`}>{r.status}</span>
-                            </td>
-                            <td>
-                              <div style={{ fontSize: '13px' }}>
-                                Steps: {r.executed_steps}/{r.total_steps}
-                              </div>
-                              <div style={{ fontSize: '11px', color: 'var(--color-text-muted)' }}>
-                                Skipped: {r.skipped_steps} | Errors: {r.errors_count}
-                              </div>
-                            </td>
-                            <td>
-                              {r.status === 'PENDING' || r.status === 'RUNNING' ? (
-                                <button className="btn-resume" onClick={() => {
-                                  setCurrentRunId(r.id);
-                                  loadRunDetails(r.id);
-                                  setConsoleLogs([
-                                    { type: 'system', text: `[SYSTEM] Resumed runner on Run ID ${r.id}.` }
-                                  ]);
-                                  setActiveTab('runner');
-                                }}>
-                                  Resume
-                                </button>
-                              ) : (
-                                <button className="btn-report" onClick={() => loadAuditDetails(r.id)}>
-                                  Report
-                                </button>
-                              )}
-                            </td>
-                          </tr>
-                        ))}
-                      </tbody>
-                    </table>
-                  )}
+        {/* Main Tab Content */}
+        <main style={{ flexGrow: 1, display: 'flex', flexDirection: 'column', gap: '24px' }}>
+          {activeTab === 'dashboard' && (
+            <>
+              {/* Quick Stats Grid */}
+              <section className="stats-grid">
+                <div className="glass-panel stat-card">
+                  <h3>Total Staged Runs</h3>
+                  <div className="value">{stats.total}</div>
+                </div>
+                <div className="glass-panel stat-card" style={{ borderLeft: '4px solid var(--color-success)' }}>
+                  <h3>Completed</h3>
+                  <div className="value" style={{ color: 'var(--color-success)' }}>{stats.completed}</div>
+                </div>
+                <div className="glass-panel stat-card" style={{ borderLeft: '4px solid var(--color-warning)' }}>
+                  <h3>Skipped / Partial</h3>
+                  <div className="value" style={{ color: 'var(--color-warning)' }}>{stats.partial}</div>
+                </div>
+                <div className="glass-panel stat-card" style={{ borderLeft: '4px solid var(--color-danger)' }}>
+                  <h3>Failed</h3>
+                  <div className="value" style={{ color: 'var(--color-danger)' }}>{stats.failed}</div>
                 </div>
               </section>
-            </div>
-          </>
-        )}
 
-        {activeTab === 'runner' && (
-          <div className="runner-layout">
-            {/* Stepper Panel */}
-            <section className="glass-panel stepper-container">
-              <div className="stepper-header">
-                {currentRun ? (
-                  <>
-                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
-                      <div>
-                        <h2>{getFeedTitle()}</h2>
-                        <p style={{ color: 'var(--color-text-secondary)', fontSize: '13px', marginTop: '4px' }}>
-                          Runbook: <strong>{currentRun.run.name}</strong> • ID: {currentRun.run.id} • Status: <span className={`badge ${currentRun.run.status.toLowerCase()}`}>{currentRun.run.status}</span>
-                        </p>
-                      </div>
-                      <button className="btn-sync" onClick={() => {
-                        loadRunDetails(currentRunId);
-                        triggerToast('Status successfully synchronized with backend.', 'success');
-                      }}>
-                        Sync Status
+              {/* Dashboard Input Area */}
+              <div className="dashboard-grid">
+                {/* Form Input */}
+                <section className="glass-panel" style={{ padding: '24px' }}>
+                  <h2 className="card-title">Stage Runbook</h2>
+
+                  <form onSubmit={handleUpload} className="input-section">
+                    <div className="form-group">
+                      <label>Runbook Context Name (Optional)</label>
+                      <input
+                        type="text"
+                        className="text-input"
+                        placeholder="e.g. MySQL Database Restart"
+                        value={uploadName}
+                        onChange={(e) => setUploadName(e.target.value)}
+                      />
+                    </div>
+
+                    <div className="form-group">
+                      <label>Upload Runbook File</label>
+                      <label
+                        className="upload-zone"
+                        style={{
+                          borderColor: isDragging ? 'var(--color-primary)' : 'rgba(255, 255, 255, 0.12)',
+                          background: isDragging ? 'rgba(127, 90, 240, 0.05)' : 'rgba(0, 0, 0, 0.1)'
+                        }}
+                        onDragOver={handleDragOver}
+                        onDragLeave={handleDragLeave}
+                        onDrop={handleDrop}
+                      >
+                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                          <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
+                          <polyline points="17 8 12 3 7 8" />
+                          <line x1="12" y1="3" x2="12" y2="15" />
+                        </svg>
+                        <div style={{ textAlign: 'center' }}>
+                          {uploadFile ? (
+                            <strong style={{ color: 'var(--color-success)' }}>{uploadFile.name}</strong>
+                          ) : (
+                            <>
+                              <div>Drag & drop or <span style={{ color: 'var(--color-primary)', textDecoration: 'underline' }}>browse</span></div>
+                              <div style={{ fontSize: '11px', color: 'var(--color-text-muted)', marginTop: '4px' }}>
+                                Supports PDF, DOCX, XLSX, JSON, YAML, CSV, HTML, MD, TXT
+                              </div>
+                            </>
+                          )}
+                        </div>
+                        <input
+                          type="file"
+                          accept=".md,.txt,.pdf,.docx,.xlsx,.json,.yaml,.yml,.csv,.rst,.html,.htm"
+                          onChange={(e) => {
+                            if (e.target.files && e.target.files[0]) {
+                              setUploadFile(e.target.files[0]);
+                            }
+                          }}
+                        />
+                      </label>
+                    </div>
+
+                    <div style={{ textAlign: 'center', color: 'var(--color-text-muted)', fontSize: '13px', margin: '-8px 0' }}>— OR —</div>
+
+                    <div className="form-group">
+                      <label>Paste Runbook Text (Markdown format)</label>
+                      <textarea
+                        className="paste-area"
+                        placeholder="# System Diagnostics Runbook&#10;1. Check memory usage: `free -m`&#10;2. Check storage status: `df -h`"
+                        value={uploadText}
+                        onChange={(e) => setUploadText(e.target.value)}
+                      />
+                    </div>
+
+                    <div style={{ display: 'flex', gap: '12px' }}>
+                      <button type="submit" className="btn-primary" style={{ flexGrow: 1 }} disabled={!isBackendConnected || isUploading}>
+                        {isUploading ? 'Staging...' : 'Stage & Parse Runbook'}
+                      </button>
+                      <button
+                        type="button"
+                        onClick={handleLoadEdgeCase}
+                        style={{
+                          padding: '12px 24px',
+                          borderRadius: 'var(--border-radius-sm)',
+                          fontWeight: '700',
+                          fontSize: '16px',
+                          cursor: 'pointer',
+                          background: 'linear-gradient(135deg, #facc15 0%, #eab308 100%)',
+                          border: 'none',
+                          color: '#050508',
+                          transition: 'var(--transition-smooth)',
+                          boxShadow: '0 4px 12px rgba(234, 179, 8, 0.3)'
+                        }}
+                        onMouseOver={(e) => {
+                          e.currentTarget.style.filter = 'brightness(1.1)';
+                          e.currentTarget.style.boxShadow = '0 6px 16px rgba(234, 179, 8, 0.5)';
+                        }}
+                        onMouseOut={(e) => {
+                          e.currentTarget.style.filter = 'none';
+                          e.currentTarget.style.boxShadow = '0 4px 12px rgba(234, 179, 8, 0.3)';
+                        }}
+                      >
+                        EDGE CASE
                       </button>
                     </div>
+                  </form>
+                </section>
 
-                    {/* Progress Bar Display */}
-                    <div style={{ marginTop: '16px' }}>
-                      <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '12px', color: 'var(--color-text-secondary)' }}>
-                        <span>Progress</span>
-                        <span>{activeProgress}%</span>
-                      </div>
-                      <div className="progress-bar-container">
-                        <div className="progress-bar-filler" style={{ width: `${activeProgress}%` }} />
-                      </div>
-                    </div>
-                  </>
-                ) : (
-                  <>
-                    <h2>No Run Selected</h2>
-                    <p style={{ color: 'var(--color-text-secondary)', fontSize: '13px' }}>Please go to Dashboard to stage a runbook.</p>
-                  </>
-                )}
-              </div>
+                {/* History List */}
+                <section className="glass-panel history-section" style={{ padding: '24px' }}>
+                  <h2 className="card-title">
+                    Run History
+                    {runs.length > 0 && (
+                      <button className="btn-danger" onClick={handleClearHistory}>
+                        Clear History
+                      </button>
+                    )}
+                  </h2>
 
-              {currentRun && currentRun.steps.map((step) => (
-                <div 
-                  key={step.id} 
-                  className={`step-node ${step.status.toLowerCase()} ${step.id === approvalStep?.id ? 'active' : ''}`}
-                >
-                  <div className="step-icon-wrapper">
-                    <div className="step-circle">
-                      {step.status === 'SUCCESS' && '✓'}
-                      {step.status === 'FAILED' && '✗'}
-                      {step.status === 'DENIED' && '⊘'}
-                      {step.status === 'WAITING_APPROVAL' && '!'}
-                      {step.status === 'PENDING' && step.step_number}
-                      {step.status === 'RUNNING' && '▶'}
-                    </div>
-                  </div>
-                  <div className="step-details">
-                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                      <h4>Step {step.step_number}</h4>
-                      <div style={{ display: 'flex', gap: '6px', alignItems: 'center' }}>
-                        {/* Step Type Badge */}
-                        <span className={`step-type-badge ${(step.step_type || 'SHELL').toLowerCase()}`}>
-                          {step.step_type === 'REST_API' && '🌐 REST'}
-                          {step.step_type === 'DB_QUERY' && '🗄️ SQL'}
-                          {step.step_type === 'CLOUD_CLI' && '☁️ Cloud'}
-                          {(!step.step_type || step.step_type === 'SHELL') && '🖥️ Shell'}
-                        </span>
-                        {/* Risk Level Badge */}
-                        {step.command && (
-                          <span className={`step-risk ${step.risk_level.toLowerCase()}`}>
-                            {step.risk_level}
-                          </span>
-                        )}
+                  <div className="runs-table-container" style={{ flexGrow: 1 }}>
+                    {runs.length === 0 ? (
+                      <div style={{ textAlign: 'center', color: 'var(--color-text-secondary)', padding: '40px 0' }}>
+                        No runbook execution records found.
                       </div>
-                    </div>
-                    <p style={{ fontSize: '14px', color: 'var(--color-text-secondary)' }}>{step.description}</p>
-                    {step.command && (
-                      <div className="step-command-line">
-                        <span className="code-badge">{step.command}</span>
-                      </div>
+                    ) : (
+                      <table className="runs-table">
+                        <thead>
+                          <tr>
+                            <th>Runbook</th>
+                            <th>Status</th>
+                            <th>Progress</th>
+                            <th>Action</th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          {runs.map((r) => (
+                            <tr key={r.id}>
+                              <td>
+                                <div style={{ fontWeight: 700 }}>{r.name}</div>
+                                <div style={{ fontSize: '12px', color: 'var(--color-text-muted)', marginTop: '4px' }}>
+                                  ID: {r.id} • {new Date(r.created_at).toLocaleString()}
+                                </div>
+                              </td>
+                              <td>
+                                <span className={`badge ${r.status.toLowerCase()}`}>{r.status}</span>
+                              </td>
+                              <td>
+                                <div style={{ fontSize: '13px' }}>
+                                  Steps: {r.executed_steps}/{r.total_steps}
+                                </div>
+                                <div style={{ fontSize: '11px', color: 'var(--color-text-muted)' }}>
+                                  Skipped: {r.skipped_steps} | Errors: {r.errors_count}
+                                </div>
+                              </td>
+                              <td>
+                                {r.status === 'PENDING' || r.status === 'RUNNING' ? (
+                                  <button className="btn-resume" onClick={() => {
+                                    setCurrentRunId(r.id);
+                                    loadRunDetails(r.id);
+                                    setConsoleLogs([
+                                      { type: 'system', text: `[SYSTEM] Resumed runner on Run ID ${r.id}.` }
+                                    ]);
+                                    setActiveTab('runner');
+                                  }}>
+                                    Resume
+                                  </button>
+                                ) : (
+                                  <button className="btn-report" onClick={() => loadAuditDetails(r.id)}>
+                                    Report
+                                  </button>
+                                )}
+                              </td>
+                            </tr>
+                          ))}
+                        </tbody>
+                      </table>
                     )}
                   </div>
-                </div>
-              ))}
-            </section>
+                </section>
+              </div>
+            </>
+          )}
 
-            {/* Console Log Panel */}
-            <section className="glass-panel console-container">
-              <div className="console-header">
-                <div className="console-title">
-                  <div className="mac-dots">
-                    <span className="mac-dot close"></span>
-                    <span className="mac-dot minimize"></span>
-                    <span className="mac-dot zoom"></span>
-                  </div>
-                  Database Console
+          {activeTab === 'runner' && (
+            <div className="runner-layout">
+              {/* Stepper Panel */}
+              <section className="glass-panel stepper-container">
+                <div className="stepper-header">
+                  {currentRun ? (
+                    <>
+                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
+                        <div>
+                          <h2>{getFeedTitle()}</h2>
+                          <p style={{ color: 'var(--color-text-secondary)', fontSize: '13px', marginTop: '4px' }}>
+                            Runbook: <strong>{currentRun.run.name}</strong> • ID: {currentRun.run.id} • Status: <span className={`badge ${currentRun.run.status.toLowerCase()}`}>{currentRun.run.status}</span>
+                          </p>
+                        </div>
+                        <button className="btn-sync" onClick={() => {
+                          loadRunDetails(currentRunId);
+                          triggerToast('Status successfully synchronized with backend.', 'success');
+                        }}>
+                          Sync Status
+                        </button>
+                      </div>
+
+                      {/* Progress Bar Display */}
+                      <div style={{ marginTop: '16px' }}>
+                        <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '12px', color: 'var(--color-text-secondary)' }}>
+                          <span>Progress</span>
+                          <span>{activeProgress}%</span>
+                        </div>
+                        <div className="progress-bar-container">
+                          <div className="progress-bar-filler" style={{ width: `${activeProgress}%` }} />
+                        </div>
+                      </div>
+                    </>
+                  ) : (
+                    <>
+                      <h2>No Run Selected</h2>
+                      <p style={{ color: 'var(--color-text-secondary)', fontSize: '13px' }}>Please go to Dashboard to stage a runbook.</p>
+                    </>
+                  )}
                 </div>
-                {currentRun && (
-                  <div style={{ display: 'flex', gap: '8px' }}>
-                    <button 
-                      className="btn-primary" 
-                      onClick={() => {
-                        setIsExecuting(!isExecuting);
-                        triggerToast(isExecuting ? 'Execution paused.' : 'Execution started.', 'info');
-                      }} 
-                      disabled={currentRun.run.status === 'COMPLETED' || currentRun.run.status === 'FAILED' || currentRun.run.status === 'PARTIAL'}
-                      style={{ padding: '6px 12px', fontSize: '13px', display: 'flex', alignItems: 'center', gap: '6px' }}
-                    >
-                      {isExecuting ? (
-                        <>
-                          <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor"><rect x="6" y="4" width="4" height="16"/><rect x="14" y="4" width="4" height="16"/></svg>
-                          Pause Pipeline
-                        </>
-                      ) : (
-                        <>
-                          <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor"><polygon points="5 3 19 12 5 21 5 3"/></svg>
-                          Run Steps
-                        </>
+
+                {currentRun && currentRun.steps.map((step) => (
+                  <div
+                    key={step.id}
+                    className={`step-node ${step.status.toLowerCase()} ${step.id === approvalStep?.id ? 'active' : ''}`}
+                  >
+                    <div className="step-icon-wrapper">
+                      <div className="step-circle">
+                        {step.status === 'SUCCESS' && '✓'}
+                        {step.status === 'FAILED' && '✗'}
+                        {step.status === 'DENIED' && '⊘'}
+                        {step.status === 'WAITING_APPROVAL' && '!'}
+                        {step.status === 'PENDING' && step.step_number}
+                        {step.status === 'RUNNING' && '▶'}
+                      </div>
+                    </div>
+                    <div className="step-details">
+                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                        <h4>Step {step.step_number}</h4>
+                        <div style={{ display: 'flex', gap: '6px', alignItems: 'center' }}>
+                          {/* Step Type Badge */}
+                          <span className={`step-type-badge ${(step.step_type || 'SHELL').toLowerCase()}`}>
+                            {step.step_type === 'REST_API' && '🌐 REST'}
+                            {step.step_type === 'DB_QUERY' && '🗄️ SQL'}
+                            {step.step_type === 'CLOUD_CLI' && '☁️ Cloud'}
+                            {(!step.step_type || step.step_type === 'SHELL') && '🖥️ Shell'}
+                          </span>
+                          {/* Risk Level Badge */}
+                          {step.command && (
+                            <span className={`step-risk ${step.risk_level.toLowerCase()}`}>
+                              {step.risk_level}
+                            </span>
+                          )}
+                        </div>
+                      </div>
+                      <p style={{ fontSize: '14px', color: 'var(--color-text-secondary)' }}>{step.description}</p>
+                      {step.command && (
+                        <div className="step-command-line">
+                          <span className="code-badge">{step.command}</span>
+                        </div>
                       )}
-                    </button>
-                    <button 
-                      className="btn-clear-logs" 
-                      onClick={() => {
-                        setConsoleLogs([]);
-                        triggerToast('Console cleared.', 'info');
-                      }}
-                    >
-                      Clear Logs
-                    </button>
+                    </div>
                   </div>
-                )}
-              </div>
+                ))}
+              </section>
 
-              <div className="console-body">
-                {consoleLogs.length === 0 ? (
-                  <div className="console-line system">Console is ready. Start execution pipeline.</div>
-                ) : (
-                  consoleLogs.map((log, idx) => {
-                    // ── SQL TABLE ────────────────────────────────────────
-                    if (log.type === 'output' || log.type === 'recovered') {
-                      try {
-                        const rawText = log.text.trim();
-                        const jsonStart = rawText.indexOf('{');
-                        const jsonText = jsonStart >= 0 ? rawText.slice(jsonStart) : rawText;
-                        const parsed = JSON.parse(jsonText);
-                        if (parsed && parsed.__type === 'SQL_TABLE') {
-                          return (
-                            <div key={idx} className="sql-table-wrapper">
-                              <div className="sql-table-header">
-                                <span>🗄️</span>
-                                <span>DB QUERY — {parsed.row_count} row(s) returned</span>
-                                <span style={{ opacity: 0.6, fontWeight: 400, marginLeft: 'auto' }}>{parsed.sql}</span>
-                              </div>
-                              <div style={{ overflowX: 'auto' }}>
-                                <table className="sql-result-table">
-                                  <thead>
-                                    <tr>
-                                      {parsed.columns.map((col, ci) => (
-                                        <th key={ci}>{col}</th>
-                                      ))}
-                                    </tr>
-                                  </thead>
-                                  <tbody>
-                                    {parsed.rows.map((row, ri) => (
-                                      <tr key={ri}>
-                                        {row.map((cell, ci) => (
-                                          <td key={ci}>
-                                            {(cell === 'None' || cell === '' || cell === null)
-                                              ? <span className="sql-null-value">NULL</span>
-                                              : cell}
-                                          </td>
-                                        ))}
-                                      </tr>
-                                    ))}
-                                  </tbody>
-                                </table>
-                              </div>
-                            </div>
-                          );
-                        }
-                      } catch (_) { /* not JSON – fall through to normal render */ }
-                    }
-
-                    // ── CORRECTED COMMAND ─────────────────────────────────
-                    if (log.type === 'corrected') {
-                      return (
-                        <div key={idx} className="corrected-cmd-block">
-                          <span style={{ fontWeight: 700 }}>🔧 CORRECTED:</span>
-                          <span>{log.text}</span>
-                        </div>
-                      );
-                    }
-
-                    // ── NORMAL LOG LINE ───────────────────────────────────
-                    return (
-                      <div key={idx} className={`console-line ${log.type}`}>
-                        {log.text}
-                      </div>
-                    );
-                  })
-                )}
-                <div ref={consoleEndRef} />
-              </div>
-            </section>
-
-            {/* Agent Live Panel */}
-            <section className="agent-panel-container">
-              <div className="agent-panel-header">
-                <div className="agent-panel-title">
-                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" style={{ color: 'var(--color-primary)' }}>
-                    <path d="M12 2a10 10 0 0 1 10 10c0 5.523-4.477 10-10 10S2 17.523 2 12 6.477 2 12 2z" />
-                    <path d="M12 6v6l4 2" />
-                  </svg>
-                  <span>Safety Guardrails</span>
-                </div>
-                
-                {/* Agent Pulse Indicator */}
-                <div className="agent-status-indicator">
-                  <span className="agent-pulse-dot" style={{ 
-                    backgroundColor: !currentRun ? 'var(--color-text-muted)' :
-                                   approvalStep ? 'var(--color-danger)' : 
-                                   isExecuting ? 'var(--color-success)' : 'var(--color-warning)' 
-                  }}></span>
-                  <span>
-                    {!currentRun ? 'IDLE' :
-                     approvalStep ? 'BLOCKED' : 
-                     isExecuting ? 'SCANNING' : 'PAUSED'}
-                  </span>
-                </div>
-              </div>
-
-              <div className="agent-panel-body">
-                {/* Active Step Panel */}
-                <div className="agent-card-section">
-                  <span className="agent-card-title">Active Safety Analysis</span>
-                  {currentRun && currentRun.steps.find(s => s.status === 'PENDING' || s.status === 'RUNNING' || s.status === 'WAITING_APPROVAL') ? (() => {
-                    const activeStep = currentRun.steps.find(s => s.status === 'PENDING' || s.status === 'RUNNING' || s.status === 'WAITING_APPROVAL');
-                    const isAllowed = activeStep.step_type !== 'SHELL' || !activeStep.explanation?.includes('[ALLOWLIST BLOCK]');
-                    
-                    return (
-                      <div className="agent-active-step-info">
-                        <div className="agent-active-step-header">
-                          <span className="agent-active-step-title">Step {activeStep.step_number} • {activeStep.step_type || 'SHELL'}</span>
-                          <span className={`badge ${activeStep.risk_level.toLowerCase()}`}>{activeStep.risk_level}</span>
-                        </div>
-                        <div className="agent-active-step-desc">{activeStep.description}</div>
-                        {activeStep.command && (
-                          <div className="agent-active-step-command">{activeStep.command}</div>
+              {/* Console Log Panel */}
+              <section className="glass-panel console-container">
+                <div className="console-header">
+                  <div className="console-title">
+                    <div className="mac-dots">
+                      <span className="mac-dot close"></span>
+                      <span className="mac-dot minimize"></span>
+                      <span className="mac-dot zoom"></span>
+                    </div>
+                    Database Console
+                  </div>
+                  {currentRun && (
+                    <div style={{ display: 'flex', gap: '8px' }}>
+                      <button
+                        className="btn-primary"
+                        onClick={() => {
+                          setIsExecuting(!isExecuting);
+                          triggerToast(isExecuting ? 'Execution paused.' : 'Execution started.', 'info');
+                        }}
+                        disabled={currentRun.run.status === 'COMPLETED' || currentRun.run.status === 'FAILED' || currentRun.run.status === 'PARTIAL'}
+                        style={{ padding: '6px 12px', fontSize: '13px', display: 'flex', alignItems: 'center', gap: '6px' }}
+                      >
+                        {isExecuting ? (
+                          <>
+                            <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor"><rect x="6" y="4" width="4" height="16" /><rect x="14" y="4" width="4" height="16" /></svg>
+                            Pause Pipeline
+                          </>
+                        ) : (
+                          <>
+                            <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor"><polygon points="5 3 19 12 5 21 5 3" /></svg>
+                            Run Steps
+                          </>
                         )}
-                        
-                        <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', marginTop: '12px' }}>
-                          {/* Policy check */}
-                          <div className={`agent-checklist-item ${isAllowed ? 'success' : 'danger'}`}>
-                            <span className={`agent-checklist-icon ${isAllowed ? 'success' : 'danger'}`}>{isAllowed ? '✓' : '✗'}</span>
-                            <span>Allowed Binary Check: {isAllowed ? 'Allowed' : 'Blocked Binary'}</span>
-                          </div>
-                          
-                          {/* Risk level check */}
-                          <div className={`agent-checklist-item ${activeStep.risk_level === 'SAFE' ? 'success' : activeStep.risk_level === 'MEDIUM' ? 'warning' : 'danger'}`}>
-                            <span className={`agent-checklist-icon ${activeStep.risk_level === 'SAFE' ? 'success' : activeStep.risk_level === 'MEDIUM' ? 'warning' : 'danger'}`}>
-                              {activeStep.risk_level === 'SAFE' ? '✓' : '!'}
-                            </span>
-                            <span>Ollama Assessment: {activeStep.risk_level === 'SAFE' ? 'No anomaly detected' : `${activeStep.risk_level} Risk flagged`}</span>
-                          </div>
-                          
-                          {/* Authorization check */}
-                          <div className={`agent-checklist-item ${activeStep.status === 'WAITING_APPROVAL' ? 'danger' : 'success'}`}>
-                            <span className={`agent-checklist-icon ${activeStep.status === 'WAITING_APPROVAL' ? 'danger' : 'success'}`}>
-                              {activeStep.status === 'WAITING_APPROVAL' ? '!' : '✓'}
-                            </span>
-                            <span>Operator Approval: {activeStep.status === 'WAITING_APPROVAL' ? 'Awaiting bypass signature' : 'Auto-authorized'}</span>
-                          </div>
-                        </div>
-
-                        {/* LLM Safety Explanation */}
-                        {activeStep.explanation && (
-                          <div className={`agent-guidance-card ${activeStep.risk_level.toLowerCase()}`} style={{ marginTop: '12px' }}>
-                            <div style={{ fontSize: '11px', fontWeight: 'bold', textTransform: 'uppercase', color: 'var(--color-text-muted)', marginBottom: '4px' }}>AI Safety Reasoning</div>
-                            <div style={{ fontSize: '12px', color: 'var(--color-text-secondary)', lineHeight: '1.4' }}>{activeStep.explanation}</div>
-                            {activeStep.recommendation && (
-                              <>
-                                <div style={{ fontSize: '11px', fontWeight: 'bold', textTransform: 'uppercase', color: 'var(--color-text-muted)', marginTop: '8px', marginBottom: '4px' }}>Mitigation Action</div>
-                                <div style={{ fontSize: '12px', color: 'var(--color-text-secondary)', lineHeight: '1.4' }}>{activeStep.recommendation}</div>
-                              </>
-                            )}
-                          </div>
-                        )}
-                      </div>
-                    );
-                  })() : (
-                    <div style={{ textAlign: 'center', padding: '24px 10px', color: 'var(--color-text-muted)', fontSize: '13px' }}>
-                      No active step. Select a runbook and click "Run Steps".
+                      </button>
+                      <button
+                        className="btn-clear-logs"
+                        onClick={() => {
+                          setConsoleLogs([]);
+                          triggerToast('Console cleared.', 'info');
+                        }}
+                      >
+                        Clear Logs
+                      </button>
                     </div>
                   )}
                 </div>
 
-                {/* Internal Agent Log Feed */}
-                <div className="agent-card-section">
-                  <span className="agent-card-title">Live Feed</span>
-                  <div className="agent-feed-container">
-                    {agentLogs.map((log, idx) => (
-                      <div key={idx} className="agent-feed-line">
-                        <span className="agent-feed-time">[{log.time}]</span>
-                        <span className={`agent-feed-text ${log.type}`}>{log.text}</span>
-                      </div>
-                    ))}
-                    <div ref={agentFeedEndRef} />
-                  </div>
-                </div>
+                <div className="console-body">
+                  {consoleLogs.length === 0 ? (
+                    <div className="console-line system">Console is ready. Start execution pipeline.</div>
+                  ) : (
+                    consoleLogs.map((log, idx) => {
+                      // ── SQL TABLE ────────────────────────────────────────
+                      if (log.type === 'output' || log.type === 'recovered') {
+                        try {
+                          const rawText = log.text.trim();
+                          const jsonStart = rawText.indexOf('{');
+                          const jsonText = jsonStart >= 0 ? rawText.slice(jsonStart) : rawText;
+                          const parsed = JSON.parse(jsonText);
+                          if (parsed && parsed.__type === 'SQL_TABLE') {
+                            return (
+                              <div key={idx} className="sql-table-wrapper">
+                                <div className="sql-table-header">
+                                  <span>🗄️</span>
+                                  <span>DB QUERY — {parsed.row_count} row(s) returned</span>
+                                  <span style={{ opacity: 0.6, fontWeight: 400, marginLeft: 'auto' }}>{parsed.sql}</span>
+                                </div>
+                                <div style={{ overflowX: 'auto' }}>
+                                  <table className="sql-result-table">
+                                    <thead>
+                                      <tr>
+                                        {parsed.columns.map((col, ci) => (
+                                          <th key={ci}>{col}</th>
+                                        ))}
+                                      </tr>
+                                    </thead>
+                                    <tbody>
+                                      {parsed.rows.map((row, ri) => (
+                                        <tr key={ri}>
+                                          {row.map((cell, ci) => (
+                                            <td key={ci}>
+                                              {(cell === 'None' || cell === '' || cell === null)
+                                                ? <span className="sql-null-value">NULL</span>
+                                                : cell}
+                                            </td>
+                                          ))}
+                                        </tr>
+                                      ))}
+                                    </tbody>
+                                  </table>
+                                </div>
+                              </div>
+                            );
+                          }
+                        } catch (_) { /* not JSON – fall through to normal render */ }
+                      }
 
-                {/* Agent Simulation & Tuning Controls */}
-                <div className="agent-card-section">
-                  <span className="agent-card-title">Guardrail Settings</span>
-                  <div className="agent-controls-panel">
-                    <div className="agent-control-row">
-                      <span>Safety Mode</span>
-                      <button 
-                        className={`agent-toggle-button ${agentMode === 'STRICT' ? 'active' : ''}`}
-                        onClick={() => {
-                          const newMode = agentMode === 'STRICT' ? 'SIMULATION' : 'STRICT';
-                          setAgentMode(newMode);
-                          triggerToast(newMode === 'STRICT' ? 'Strict enforcement active.' : 'Guardrail simulation mode active.', 'info');
-                          addAgentLog(`Safety mode changed to: ${newMode}.`, 'warning');
-                        }}
-                      >
-                        {agentMode === 'STRICT' ? '🛡️ Strict Enforce' : '🔓 Permit All'}
-                      </button>
-                    </div>
-                    
-                    <div className="agent-control-row">
-                      <span>Analysis Pulse Delay</span>
-                      <select 
-                        className="agent-select" 
-                        value={analysisDelay} 
-                        onChange={(e) => {
-                          const val = Number(e.target.value);
-                          setAnalysisDelay(val);
-                          addAgentLog(`Analysis pulse delay updated to ${val}ms.`, 'system');
-                        }}
-                      >
-                        <option value={1000}>1.0s (Normal)</option>
-                        <option value={2000}>2.0s (Detailed)</option>
-                        <option value={3000}>3.0s (Slow Thoughts)</option>
-                        <option value={300}>0.3s (Instant)</option>
-                      </select>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </section>
-          </div>
-        )}
+                      // ── CORRECTED COMMAND ─────────────────────────────────
+                      if (log.type === 'corrected') {
+                        return (
+                          <div key={idx} className="corrected-cmd-block">
+                            <span style={{ fontWeight: 700 }}>🔧 CORRECTED:</span>
+                            <span>{log.text}</span>
+                          </div>
+                        );
+                      }
 
-        {activeTab === 'audit' && (
-          <section className="glass-panel audit-layout" style={{ padding: '24px' }}>
-            {auditRunDetails ? (
-              <>
-                <div className="audit-header">
-                  <div className="audit-meta">
-                    <h2 style={{ fontSize: '24px' }}>{auditRunDetails.run.name}</h2>
-                    <p style={{ color: 'var(--color-text-secondary)', fontSize: '14px' }}>
-                      Run ID: {auditRunDetails.run.id} • Started: {new Date(auditRunDetails.run.created_at).toLocaleString()}
-                      {auditRunDetails.run.completed_at && ` • Ended: ${new Date(auditRunDetails.run.completed_at).toLocaleString()}`}
-                    </p>
+                      // ── NORMAL LOG LINE ───────────────────────────────────
+                      return (
+                        <div key={idx} className={`console-line ${log.type}`}>
+                          {log.text}
+                        </div>
+                      );
+                    })
+                  )}
+                  <div ref={consoleEndRef} />
+                </div>
+              </section>
+
+              {/* Agent Live Panel */}
+              <section className="agent-panel-container">
+                <div className="agent-panel-header">
+                  <div className="agent-panel-title">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" style={{ color: 'var(--color-primary)' }}>
+                      <path d="M12 2a10 10 0 0 1 10 10c0 5.523-4.477 10-10 10S2 17.523 2 12 6.477 2 12 2z" />
+                      <path d="M12 6v6l4 2" />
+                    </svg>
+                    <span>Safety Guardrails</span>
                   </div>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-                    <button 
-                      className="btn-primary" 
-                      onClick={handleDownloadCSV} 
-                      style={{ 
-                        display: 'flex', 
-                        alignItems: 'center', 
-                        gap: '6px', 
-                        padding: '6px 12px', 
-                        fontSize: '13px',
-                        cursor: 'pointer'
-                      }}
-                    >
-                      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-                        <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
-                        <polyline points="7 10 12 15 17 10" />
-                        <line x1="12" y1="15" x2="12" y2="3" />
-                      </svg>
-                      Download CSV
-                    </button>
-                    <span className={`badge ${auditRunDetails.run.status.toLowerCase()}`} style={{ fontSize: '14px', padding: '6px 12px' }}>
-                      {auditRunDetails.run.status}
+
+                  {/* Agent Pulse Indicator */}
+                  <div className="agent-status-indicator">
+                    <span className="agent-pulse-dot" style={{
+                      backgroundColor: !currentRun ? 'var(--color-text-muted)' :
+                        approvalStep ? 'var(--color-danger)' :
+                          isExecuting ? 'var(--color-success)' : 'var(--color-warning)'
+                    }}></span>
+                    <span>
+                      {!currentRun ? 'IDLE' :
+                        approvalStep ? 'BLOCKED' :
+                          isExecuting ? 'SCANNING' : 'PAUSED'}
                     </span>
                   </div>
                 </div>
 
-                {/* AI generated audit report */}
-                <div className="glass-panel" style={{ background: 'rgba(0, 0, 0, 0.2)', border: '1px solid var(--border-glass)' }}>
-                  <div className="report-markdown">
-                    <h3 style={{ marginTop: 0, borderBottom: '1px solid var(--border-glass)', paddingBottom: '8px' }}>Execution Audit Summary Report</h3>
-                    <div style={{ whiteSpace: 'pre-line', marginTop: '16px', color: 'var(--color-text-primary)' }}>
-                      {auditRunDetails.run.audit_summary || 'No audit report generated for this run.'}
-                    </div>
-                  </div>
-                </div>
+                <div className="agent-panel-body">
+                  {/* Active Step Panel */}
+                  <div className="agent-card-section">
+                    <span className="agent-card-title">Active Safety Analysis</span>
+                    {currentRun && currentRun.steps.find(s => s.status === 'PENDING' || s.status === 'RUNNING' || s.status === 'WAITING_APPROVAL') ? (() => {
+                      const activeStep = currentRun.steps.find(s => s.status === 'PENDING' || s.status === 'RUNNING' || s.status === 'WAITING_APPROVAL');
+                      const isAllowed = activeStep.step_type !== 'SHELL' || !activeStep.explanation?.includes('[ALLOWLIST BLOCK]');
 
-                {/* Step breakdowns */}
-                <div>
-                  <h3 style={{ marginBottom: '16px', fontSize: '18px' }}>Individual Step Executions</h3>
-                  <div className="audit-steps-list">
-                    {auditRunDetails.steps.map((step) => {
-                      const isExpanded = !!expandedSteps[step.id];
                       return (
-                        <div key={step.id} className="audit-step-card">
-                          <button className="audit-step-trigger" onClick={() => toggleStepExpansion(step.id)}>
-                            <div className="audit-step-info">
-                              <div style={{
-                                width: '24px',
-                                height: '24px',
-                                borderRadius: '50%',
-                                display: 'flex',
-                                alignItems: 'center',
-                                justifyContent: 'center',
-                                fontSize: '11px',
-                                fontWeight: 700,
-                                background: step.status === 'SUCCESS' ? 'var(--color-success-glow)' : (step.status === 'FAILED' || step.status === 'FAILED_NEEDS_MCP' ? 'var(--color-danger-glow)' : 'rgba(255, 255, 255, 0.05)'),
-                                color: step.status === 'SUCCESS' ? 'var(--color-success)' : (step.status === 'FAILED' || step.status === 'FAILED_NEEDS_MCP' ? 'var(--color-danger)' : 'var(--color-text-secondary)'),
-                                border: '1px solid currentColor'
-                              }}>
-                                {step.step_number}
-                              </div>
-                              <div>
-                                <span style={{ fontWeight: 600 }}>{step.description}</span>
-                                {step.command && !step.corrected_command && <code style={{ marginLeft: '12px', fontSize: '12px', color: 'var(--color-primary-hover)' }}>{step.command}</code>}
-                                {step.command && step.corrected_command && (
-                                  <>
-                                    <code style={{ marginLeft: '12px', fontSize: '12px', color: 'var(--color-danger)', textDecoration: 'line-through' }}>{step.command}</code>
-                                    <span style={{ margin: '0 8px', color: 'var(--color-text-muted)', fontSize: '12px' }}>→</span>
-                                    <code style={{ fontSize: '12px', color: 'var(--color-success)' }}>{step.corrected_command}</code>
-                                  </>
-                                )}
-                              </div>
-                            </div>
-                            <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-                              {step.command && <span className={`step-risk ${step.risk_level.toLowerCase()}`} style={{ marginRight: '8px' }}>{step.risk_level}</span>}
-                              <span className={`badge ${step.status === 'FAILED_NEEDS_MCP' ? 'failed' : step.status.toLowerCase()}`}>
-                                {step.status === 'FAILED_NEEDS_MCP' ? 'FAILED' : step.status}
-                              </span>
-                              <svg 
-                                width="16" 
-                                height="16" 
-                                viewBox="0 0 24 24" 
-                                fill="none" 
-                                stroke="currentColor" 
-                                strokeWidth="2.5" 
-                                style={{ transform: isExpanded ? 'rotate(180deg)' : 'rotate(0deg)', transition: 'transform 0.2s' }}
-                              >
-                                <polyline points="6 9 12 15 18 9" />
-                              </svg>
-                            </div>
-                          </button>
+                        <div className="agent-active-step-info">
+                          <div className="agent-active-step-header">
+                            <span className="agent-active-step-title">Step {activeStep.step_number} • {activeStep.step_type || 'SHELL'}</span>
+                            <span className={`badge ${activeStep.risk_level.toLowerCase()}`}>{activeStep.risk_level}</span>
+                          </div>
+                          <div className="agent-active-step-desc">{activeStep.description}</div>
+                          {activeStep.command && (
+                            <div className="agent-active-step-command">{activeStep.command}</div>
+                          )}
 
-                          {isExpanded && (
-                            <div className="audit-step-details">
-                              {step.command && (
+                          <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', marginTop: '12px' }}>
+                            {/* Policy check */}
+                            <div className={`agent-checklist-item ${isAllowed ? 'success' : 'danger'}`}>
+                              <span className={`agent-checklist-icon ${isAllowed ? 'success' : 'danger'}`}>{isAllowed ? '✓' : '✗'}</span>
+                              <span>Allowed Binary Check: {isAllowed ? 'Allowed' : 'Blocked Binary'}</span>
+                            </div>
+
+                            {/* Risk level check */}
+                            <div className={`agent-checklist-item ${activeStep.risk_level === 'SAFE' ? 'success' : activeStep.risk_level === 'MEDIUM' ? 'warning' : 'danger'}`}>
+                              <span className={`agent-checklist-icon ${activeStep.risk_level === 'SAFE' ? 'success' : activeStep.risk_level === 'MEDIUM' ? 'warning' : 'danger'}`}>
+                                {activeStep.risk_level === 'SAFE' ? '✓' : '!'}
+                              </span>
+                              <span>Ollama Assessment: {activeStep.risk_level === 'SAFE' ? 'No anomaly detected' : `${activeStep.risk_level} Risk flagged`}</span>
+                            </div>
+
+                            {/* Authorization check */}
+                            <div className={`agent-checklist-item ${activeStep.status === 'WAITING_APPROVAL' ? 'danger' : 'success'}`}>
+                              <span className={`agent-checklist-icon ${activeStep.status === 'WAITING_APPROVAL' ? 'danger' : 'success'}`}>
+                                {activeStep.status === 'WAITING_APPROVAL' ? '!' : '✓'}
+                              </span>
+                              <span>Operator Approval: {activeStep.status === 'WAITING_APPROVAL' ? 'Awaiting bypass signature' : 'Auto-authorized'}</span>
+                            </div>
+                          </div>
+
+                          {/* LLM Safety Explanation */}
+                          {activeStep.explanation && (
+                            <div className={`agent-guidance-card ${activeStep.risk_level.toLowerCase()}`} style={{ marginTop: '12px' }}>
+                              <div style={{ fontSize: '11px', fontWeight: 'bold', textTransform: 'uppercase', color: 'var(--color-text-muted)', marginBottom: '4px' }}>AI Safety Reasoning</div>
+                              <div style={{ fontSize: '12px', color: 'var(--color-text-secondary)', lineHeight: '1.4' }}>{activeStep.explanation}</div>
+                              {activeStep.recommendation && (
                                 <>
-                                  <div>
-                                    <h4 style={{ fontSize: '13px', textTransform: 'uppercase', color: 'var(--color-text-secondary)', marginBottom: '4px' }}>Safety Classification Detail</h4>
-                                    <div style={{ fontSize: '14px', lineHeight: 1.5 }}>
-                                      <strong>Explanation:</strong> {step.explanation || 'None'}
-                                    </div>
-                                    {step.recommendation && (
-                                      <div style={{ fontSize: '14px', lineHeight: 1.5, marginTop: '4px' }}>
-                                        <strong>Recommendation:</strong> {step.recommendation}
-                                      </div>
-                                    )}
-                                  </div>
-                                  {step.corrected_command && (
-                                    <div style={{ borderLeft: '3px solid var(--color-success)', background: 'rgba(16, 185, 129, 0.05)', padding: '12px 16px', borderRadius: '6px' }}>
-                                      <h4 style={{ fontSize: '12px', textTransform: 'uppercase', color: 'var(--color-success)', margin: '0 0 8px 0', fontWeight: 800, letterSpacing: '0.5px' }}>
-                                        🔧 Auto-Corrected Command
-                                      </h4>
-                                      <div style={{
-                                        fontFamily: 'var(--font-mono)',
-                                        fontSize: '13px',
-                                        background: 'rgba(0,0,0,0.35)',
-                                        border: '1px solid rgba(16,185,129,0.2)',
-                                        borderRadius: '5px',
-                                        padding: '9px 14px',
-                                        color: '#6ee7b7',
-                                        wordBreak: 'break-all',
-                                        whiteSpace: 'pre-wrap'
-                                      }}>
-                                        {step.corrected_command}
-                                      </div>
-                                    </div>
-                                  )}
-                                  <div>
-                                    <h4 style={{ fontSize: '13px', textTransform: 'uppercase', color: 'var(--color-text-secondary)', marginBottom: '4px' }}>Terminal Stdout / Output</h4>
-                                    <div className="output-box" style={{ padding: step.step_type === 'DB_QUERY' ? '0' : undefined, background: step.step_type === 'DB_QUERY' ? 'transparent' : undefined }}>
-                                      {(() => {
-                                        if (step.step_type === 'DB_QUERY' && step.output) {
-                                          try {
-                                            // Strip any MCP prefix lines before JSON parsing
-                                            const rawOutput = step.output.trim();
-                                            const jsonStart = rawOutput.indexOf('{');
-                                            const jsonText = jsonStart >= 0 ? rawOutput.slice(jsonStart) : rawOutput;
-                                            const parsed = JSON.parse(jsonText);
-                                            if (parsed && parsed.__type === 'SQL_TABLE') {
-                                              return (
-                                                <div className="sql-table-wrapper" style={{ margin: 0, border: '1px solid rgba(99,102,241,0.25)', borderRadius: '8px' }}>
-                                                  <div className="sql-table-header">
-                                                    <span>🗄️</span>
-                                                    <span>DB QUERY — {parsed.row_count} row(s) returned</span>
-                                                    <span style={{ opacity: 0.6, fontWeight: 400, marginLeft: 'auto' }}>{parsed.sql}</span>
-                                                  </div>
-                                                  <div style={{ overflowX: 'auto' }}>
-                                                    <table className="sql-result-table">
-                                                      <thead>
-                                                        <tr>
-                                                          {parsed.columns.map((col, ci) => (
-                                                            <th key={ci}>{col}</th>
-                                                          ))}
-                                                        </tr>
-                                                      </thead>
-                                                      <tbody>
-                                                        {parsed.rows.map((row, ri) => (
-                                                          <tr key={ri}>
-                                                            {row.map((cell, ci) => (
-                                                              <td key={ci}>
-                                                                {(cell === 'None' || cell === '' || cell === null)
-                                                                  ? <span className="sql-null-value">NULL</span>
-                                                                  : cell}
-                                                              </td>
-                                                            ))}
-                                                          </tr>
-                                                        ))}
-                                                      </tbody>
-                                                    </table>
-                                                  </div>
-                                                </div>
-                                              );
-                                            }
-                                          } catch (_) {}
-                                        }
-                                        return step.output || 'No output recorded.';
-                                      })()}
-                                    </div>
-                                  </div>
+                                  <div style={{ fontSize: '11px', fontWeight: 'bold', textTransform: 'uppercase', color: 'var(--color-text-muted)', marginTop: '8px', marginBottom: '4px' }}>Mitigation Action</div>
+                                  <div style={{ fontSize: '12px', color: 'var(--color-text-secondary)', lineHeight: '1.4' }}>{activeStep.recommendation}</div>
                                 </>
-                              )}
-                              {!step.command && (
-                                <div style={{ fontStyle: 'italic', color: 'var(--color-text-muted)', fontSize: '14px' }}>
-                                  Informational step (no command executed).
-                                </div>
                               )}
                             </div>
                           )}
                         </div>
                       );
-                    })}
+                    })() : (
+                      <div style={{ textAlign: 'center', padding: '24px 10px', color: 'var(--color-text-muted)', fontSize: '13px' }}>
+                        No active step. Select a runbook and click "Run Steps".
+                      </div>
+                    )}
+                  </div>
+
+                  {/* Internal Agent Log Feed */}
+                  <div className="agent-card-section">
+                    <span className="agent-card-title">Live Feed</span>
+                    <div className="agent-feed-container">
+                      {agentLogs.map((log, idx) => (
+                        <div key={idx} className="agent-feed-line">
+                          <span className="agent-feed-time">[{log.time}]</span>
+                          <span className={`agent-feed-text ${log.type}`}>{log.text}</span>
+                        </div>
+                      ))}
+                      <div ref={agentFeedEndRef} />
+                    </div>
+                  </div>
+
+                  {/* Agent Simulation & Tuning Controls */}
+                  <div className="agent-card-section">
+                    <span className="agent-card-title">Guardrail Settings</span>
+                    <div className="agent-controls-panel">
+                      <div className="agent-control-row">
+                        <span>Safety Mode</span>
+                        <button
+                          className={`agent-toggle-button ${agentMode === 'STRICT' ? 'active' : ''}`}
+                          onClick={() => {
+                            const newMode = agentMode === 'STRICT' ? 'SIMULATION' : 'STRICT';
+                            setAgentMode(newMode);
+                            triggerToast(newMode === 'STRICT' ? 'Strict enforcement active.' : 'Guardrail simulation mode active.', 'info');
+                            addAgentLog(`Safety mode changed to: ${newMode}.`, 'warning');
+                          }}
+                        >
+                          {agentMode === 'STRICT' ? '🛡️ Strict Enforce' : '🔓 Permit All'}
+                        </button>
+                      </div>
+
+                      <div className="agent-control-row">
+                        <span>Analysis Pulse Delay</span>
+                        <select
+                          className="agent-select"
+                          value={analysisDelay}
+                          onChange={(e) => {
+                            const val = Number(e.target.value);
+                            setAnalysisDelay(val);
+                            addAgentLog(`Analysis pulse delay updated to ${val}ms.`, 'system');
+                          }}
+                        >
+                          <option value={1000}>1.0s (Normal)</option>
+                          <option value={2000}>2.0s (Detailed)</option>
+                          <option value={3000}>3.0s (Slow Thoughts)</option>
+                          <option value={300}>0.3s (Instant)</option>
+                        </select>
+                      </div>
+                    </div>
                   </div>
                 </div>
-              </>
-            ) : (
-              <div style={{ textAlign: 'center', color: 'var(--color-text-secondary)', padding: '60px 0' }}>
-                Please select a completed run from the Dashboard Run History to view its audit report.
-              </div>
-            )}
-          </section>
-        )}
-      </main>
-
-      {/* Manual Approval Warning Alert Modal */}
-      {approvalStep && (
-        <div className="modal-overlay">
-          <div className="glass-panel modal-content">
-            <div className="warning-header">
-              <svg className="warning-icon" width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
-                <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/>
-                <line x1="12" y1="9" x2="12" y2="13"/>
-                <line x1="12" y1="17" x2="12.01" y2="17"/>
-              </svg>
-              <div>
-                <h3 style={{ fontSize: '20px', fontWeight: 800 }}>Risky Action Blocked</h3>
-                <p style={{ color: 'var(--color-text-secondary)', fontSize: '13px', marginTop: '2px' }}>
-                  Safety Rating: <span className="step-risk high" style={{ fontSize: '10px' }}>{approvalStep.risk_level}</span>
-                </p>
-              </div>
+              </section>
             </div>
+          )}
 
-            <div>
-              <h4 style={{ fontSize: '13px', textTransform: 'uppercase', color: 'var(--color-text-secondary)', marginBottom: '6px' }}>Staged Command</h4>
-              <div className="warning-command-box">{approvalStep.command}</div>
-            </div>
+          {activeTab === 'audit' && (
+            <section className="glass-panel audit-layout" style={{ padding: '24px' }}>
+              {auditRunDetails ? (
+                <>
+                  <div className="audit-header">
+                    <div className="audit-meta">
+                      <h2 style={{ fontSize: '24px' }}>{auditRunDetails.run.name}</h2>
+                      <p style={{ color: 'var(--color-text-secondary)', fontSize: '14px' }}>
+                        Run ID: {auditRunDetails.run.id} • Started: {new Date(auditRunDetails.run.created_at).toLocaleString()}
+                        {auditRunDetails.run.completed_at && ` • Ended: ${new Date(auditRunDetails.run.completed_at).toLocaleString()}`}
+                      </p>
+                    </div>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                      <button
+                        className="btn-primary"
+                        onClick={handleDownloadCSV}
+                        style={{
+                          display: 'flex',
+                          alignItems: 'center',
+                          gap: '6px',
+                          padding: '6px 12px',
+                          fontSize: '13px',
+                          cursor: 'pointer'
+                        }}
+                      >
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                          <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
+                          <polyline points="7 10 12 15 17 10" />
+                          <line x1="12" y1="15" x2="12" y2="3" />
+                        </svg>
+                        Download CSV
+                      </button>
+                      <span className={`badge ${auditRunDetails.run.status.toLowerCase()}`} style={{ fontSize: '14px', padding: '6px 12px' }}>
+                        {auditRunDetails.run.status}
+                      </span>
+                    </div>
+                  </div>
 
-            <div className="warning-details">
-              <h5>Safety Model Classification</h5>
-              <p>{approvalWarning || approvalStep.explanation || 'Risky command pattern matching standard blacklist/restricted binary rules.'}</p>
-              {approvalStep.recommendation && (
-                <p style={{ marginTop: '8px', borderTop: '1px solid rgba(255, 142, 60, 0.1)', paddingTop: '8px', fontSize: '13px' }}>
-                  <strong>Recommendation:</strong> {approvalStep.recommendation}
-                </p>
+                  {/* AI generated audit report */}
+                  <div className="glass-panel" style={{ background: 'rgba(0, 0, 0, 0.2)', border: '1px solid var(--border-glass)' }}>
+                    <div className="report-markdown">
+                      <h3 style={{ marginTop: 0, borderBottom: '1px solid var(--border-glass)', paddingBottom: '8px' }}>Execution Audit Summary Report</h3>
+                      <div style={{ whiteSpace: 'pre-line', marginTop: '16px', color: 'var(--color-text-primary)' }}>
+                        {auditRunDetails.run.audit_summary || 'No audit report generated for this run.'}
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Step breakdowns */}
+                  <div>
+                    <h3 style={{ marginBottom: '16px', fontSize: '18px' }}>Individual Step Executions</h3>
+                    <div className="audit-steps-list">
+                      {auditRunDetails.steps.map((step) => {
+                        const isExpanded = !!expandedSteps[step.id];
+                        return (
+                          <div key={step.id} className="audit-step-card">
+                            <button className="audit-step-trigger" onClick={() => toggleStepExpansion(step.id)}>
+                              <div className="audit-step-info">
+                                <div style={{
+                                  width: '24px',
+                                  height: '24px',
+                                  borderRadius: '50%',
+                                  display: 'flex',
+                                  alignItems: 'center',
+                                  justifyContent: 'center',
+                                  fontSize: '11px',
+                                  fontWeight: 700,
+                                  background: step.status === 'SUCCESS' ? 'var(--color-success-glow)' : (step.status === 'FAILED' || step.status === 'FAILED_NEEDS_MCP' ? 'var(--color-danger-glow)' : 'rgba(255, 255, 255, 0.05)'),
+                                  color: step.status === 'SUCCESS' ? 'var(--color-success)' : (step.status === 'FAILED' || step.status === 'FAILED_NEEDS_MCP' ? 'var(--color-danger)' : 'var(--color-text-secondary)'),
+                                  border: '1px solid currentColor'
+                                }}>
+                                  {step.step_number}
+                                </div>
+                                <div>
+                                  <span style={{ fontWeight: 600 }}>{step.description}</span>
+                                  {step.command && !step.corrected_command && <code style={{ marginLeft: '12px', fontSize: '12px', color: 'var(--color-primary-hover)' }}>{step.command}</code>}
+                                  {step.command && step.corrected_command && (
+                                    <>
+                                      <code style={{ marginLeft: '12px', fontSize: '12px', color: 'var(--color-danger)', textDecoration: 'line-through' }}>{step.command}</code>
+                                      <span style={{ margin: '0 8px', color: 'var(--color-text-muted)', fontSize: '12px' }}>→</span>
+                                      <code style={{ fontSize: '12px', color: 'var(--color-success)' }}>{step.corrected_command}</code>
+                                    </>
+                                  )}
+                                </div>
+                              </div>
+                              <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                                {step.command && <span className={`step-risk ${step.risk_level.toLowerCase()}`} style={{ marginRight: '8px' }}>{step.risk_level}</span>}
+                                <span className={`badge ${step.status === 'FAILED_NEEDS_MCP' ? 'failed' : step.status.toLowerCase()}`}>
+                                  {step.status === 'FAILED_NEEDS_MCP' ? 'FAILED' : step.status}
+                                </span>
+                                <svg
+                                  width="16"
+                                  height="16"
+                                  viewBox="0 0 24 24"
+                                  fill="none"
+                                  stroke="currentColor"
+                                  strokeWidth="2.5"
+                                  style={{ transform: isExpanded ? 'rotate(180deg)' : 'rotate(0deg)', transition: 'transform 0.2s' }}
+                                >
+                                  <polyline points="6 9 12 15 18 9" />
+                                </svg>
+                              </div>
+                            </button>
+
+                            {isExpanded && (
+                              <div className="audit-step-details">
+                                {step.command && (
+                                  <>
+                                    <div>
+                                      <h4 style={{ fontSize: '13px', textTransform: 'uppercase', color: 'var(--color-text-secondary)', marginBottom: '4px' }}>Safety Classification Detail</h4>
+                                      <div style={{ fontSize: '14px', lineHeight: 1.5 }}>
+                                        <strong>Explanation:</strong> {step.explanation || 'None'}
+                                      </div>
+                                      {step.recommendation && (
+                                        <div style={{ fontSize: '14px', lineHeight: 1.5, marginTop: '4px' }}>
+                                          <strong>Recommendation:</strong> {step.recommendation}
+                                        </div>
+                                      )}
+                                    </div>
+                                    {step.corrected_command && (
+                                      <div style={{ borderLeft: '3px solid var(--color-success)', background: 'rgba(16, 185, 129, 0.05)', padding: '12px 16px', borderRadius: '6px' }}>
+                                        <h4 style={{ fontSize: '12px', textTransform: 'uppercase', color: 'var(--color-success)', margin: '0 0 8px 0', fontWeight: 800, letterSpacing: '0.5px' }}>
+                                          🔧 Auto-Corrected Command
+                                        </h4>
+                                        <div style={{
+                                          fontFamily: 'var(--font-mono)',
+                                          fontSize: '13px',
+                                          background: 'rgba(0,0,0,0.35)',
+                                          border: '1px solid rgba(16,185,129,0.2)',
+                                          borderRadius: '5px',
+                                          padding: '9px 14px',
+                                          color: '#6ee7b7',
+                                          wordBreak: 'break-all',
+                                          whiteSpace: 'pre-wrap'
+                                        }}>
+                                          {step.corrected_command}
+                                        </div>
+                                      </div>
+                                    )}
+                                    <div>
+                                      <h4 style={{ fontSize: '13px', textTransform: 'uppercase', color: 'var(--color-text-secondary)', marginBottom: '4px' }}>Terminal Stdout / Output</h4>
+                                      <div className="output-box" style={{ padding: step.step_type === 'DB_QUERY' ? '0' : undefined, background: step.step_type === 'DB_QUERY' ? 'transparent' : undefined }}>
+                                        {(() => {
+                                          if (step.step_type === 'DB_QUERY' && step.output) {
+                                            try {
+                                              // Strip any MCP prefix lines before JSON parsing
+                                              const rawOutput = step.output.trim();
+                                              const jsonStart = rawOutput.indexOf('{');
+                                              const jsonText = jsonStart >= 0 ? rawOutput.slice(jsonStart) : rawOutput;
+                                              const parsed = JSON.parse(jsonText);
+                                              if (parsed && parsed.__type === 'SQL_TABLE') {
+                                                return (
+                                                  <div className="sql-table-wrapper" style={{ margin: 0, border: '1px solid rgba(99,102,241,0.25)', borderRadius: '8px' }}>
+                                                    <div className="sql-table-header">
+                                                      <span>🗄️</span>
+                                                      <span>DB QUERY — {parsed.row_count} row(s) returned</span>
+                                                      <span style={{ opacity: 0.6, fontWeight: 400, marginLeft: 'auto' }}>{parsed.sql}</span>
+                                                    </div>
+                                                    <div style={{ overflowX: 'auto' }}>
+                                                      <table className="sql-result-table">
+                                                        <thead>
+                                                          <tr>
+                                                            {parsed.columns.map((col, ci) => (
+                                                              <th key={ci}>{col}</th>
+                                                            ))}
+                                                          </tr>
+                                                        </thead>
+                                                        <tbody>
+                                                          {parsed.rows.map((row, ri) => (
+                                                            <tr key={ri}>
+                                                              {row.map((cell, ci) => (
+                                                                <td key={ci}>
+                                                                  {(cell === 'None' || cell === '' || cell === null)
+                                                                    ? <span className="sql-null-value">NULL</span>
+                                                                    : cell}
+                                                                </td>
+                                                              ))}
+                                                            </tr>
+                                                          ))}
+                                                        </tbody>
+                                                      </table>
+                                                    </div>
+                                                  </div>
+                                                );
+                                              }
+                                            } catch (_) { }
+                                          }
+                                          return step.output || 'No output recorded.';
+                                        })()}
+                                      </div>
+                                    </div>
+                                  </>
+                                )}
+                                {!step.command && (
+                                  <div style={{ fontStyle: 'italic', color: 'var(--color-text-muted)', fontSize: '14px' }}>
+                                    Informational step (no command executed).
+                                  </div>
+                                )}
+                              </div>
+                            )}
+                          </div>
+                        );
+                      })}
+                    </div>
+                  </div>
+                </>
+              ) : (
+                <div style={{ textAlign: 'center', color: 'var(--color-text-secondary)', padding: '60px 0' }}>
+                  Please select a completed run from the Dashboard Run History to view its audit report.
+                </div>
               )}
-            </div>
+            </section>
+          )}
+        </main>
 
-            <div className="modal-actions">
-              <button className="btn-deny" onClick={handleDeny}>
-                Deny & Skip Step
-              </button>
-              <button className="btn-approve" onClick={handleApprove}>
-                Approve & Execute
-              </button>
+        {/* Manual Approval Warning Alert Modal */}
+        {approvalStep && (
+          <div className="modal-overlay">
+            <div className="glass-panel modal-content">
+              <div className="warning-header">
+                <svg className="warning-icon" width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
+                  <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z" />
+                  <line x1="12" y1="9" x2="12" y2="13" />
+                  <line x1="12" y1="17" x2="12.01" y2="17" />
+                </svg>
+                <div>
+                  <h3 style={{ fontSize: '20px', fontWeight: 800 }}>Risky Action Blocked</h3>
+                  <p style={{ color: 'var(--color-text-secondary)', fontSize: '13px', marginTop: '2px' }}>
+                    Safety Rating: <span className="step-risk high" style={{ fontSize: '10px' }}>{approvalStep.risk_level}</span>
+                  </p>
+                </div>
+              </div>
+
+              <div>
+                <h4 style={{ fontSize: '13px', textTransform: 'uppercase', color: 'var(--color-text-secondary)', marginBottom: '6px' }}>Staged Command</h4>
+                <div className="warning-command-box">{approvalStep.command}</div>
+              </div>
+
+              <div className="warning-details">
+                <h5>Safety Model Classification</h5>
+                <p>{approvalWarning || approvalStep.explanation || 'Risky command pattern matching standard blacklist/restricted binary rules.'}</p>
+                {approvalStep.recommendation && (
+                  <p style={{ marginTop: '8px', borderTop: '1px solid rgba(255, 142, 60, 0.1)', paddingTop: '8px', fontSize: '13px' }}>
+                    <strong>Recommendation:</strong> {approvalStep.recommendation}
+                  </p>
+                )}
+              </div>
+
+              <div className="modal-actions">
+                <button className="btn-deny" onClick={handleDeny}>
+                  Deny & Skip Step
+                </button>
+                <button className="btn-approve" onClick={handleApprove}>
+                  Approve & Execute
+                </button>
+              </div>
             </div>
           </div>
-        </div>
-      )}
-    </div>
+        )}
+      </div>
     </>
   );
 }
